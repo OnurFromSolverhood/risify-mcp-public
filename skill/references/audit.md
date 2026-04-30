@@ -50,7 +50,7 @@ query { auditSummary(id: "<audit-id>") { healthScore onpageScore totalIssues hig
 
 ALWAYS present results using this template:
 
-```
+```text
 SEO Audit Results:
 
   Health Score: {healthScore}/100
@@ -77,7 +77,7 @@ query { auditBrokenLinksConnection(args: { first: 20, query: "auditId:<audit-id>
 ```
 
 Present as:
-```
+```text
 Broken Links:
 
 1. [{impact}] {issue}
