@@ -57,9 +57,7 @@ mutation { generateAIFAQ(input: { resourceGIDs: ["gid://shopify/Product/123"] co
 
 ### Step 4: Review with User
 
-Present each generated FAQ. The user may accept, edit, or discard.
-
-ALWAYS use this exact template:
+Present each generated FAQ for approval. ALWAYS use this exact template:
 
 ```
 **FAQ #N**
@@ -67,6 +65,14 @@ Q: {question}
 A: {answer}
 → Accept / Edit / Discard?
 ```
+
+**Handling responses:**
+- **Accept** → Add to the approved list for Step 5
+- **Edit** → Ask user for revised Q&A, update the item, re-confirm, then add to approved list
+- **Discard** → Skip this FAQ entirely
+
+After all FAQs are reviewed, confirm the final list: "Saving {N} FAQs to {M} resources. Proceed?"
+If no FAQs were accepted, stop and inform user.
 
 ### Step 5: Save and Assign FAQs
 
@@ -104,14 +110,39 @@ Check `created.successCount` and `assigned.successCount` in the response to conf
 
 Tell the user how many FAQs were created and which resources they were assigned to.
 
-## Additional Operations
+## Additional Workflows
 
-| Task | Method |
-|------|--------|
-| List existing FAQs | shopifyProxy → `metaobjects(type: "$app:risify_faq")` |
-| Update a FAQ | shopifyProxy → `metaobjectUpdate` |
-| Delete a FAQ | shopifyProxy → `metaobjectDelete` |
-| View FAQ count | `shopifyProductsConnection` / `shopifyCollectionsConnection` with `pageInfo.totalCount` |
+### List Existing FAQs
+
+Use the List Existing FAQs query from `faq-operations.md`. Present results as:
+
+```
+Your FAQs ({count} total):
+
+1. Q: {question}
+   A: {answer}
+   ID: {metaobject GID}
+
+2. Q: {question}
+   A: {answer}
+   ID: {metaobject GID}
+
+{pagination info if more pages}
+```
+
+### Update a FAQ
+
+1. Find the FAQ — list FAQs and let user identify which one (by number or question text)
+2. Ask what to change (question, answer, or both)
+3. Use the Update FAQ Metaobject mutation from `faq-operations.md`
+4. Confirm: "FAQ updated successfully."
+
+### Delete a FAQ
+
+1. Find the FAQ — list FAQs and let user identify which one
+2. **Confirm before deleting:** "Delete FAQ: '{question}'? This cannot be undone."
+3. Use the Delete FAQ Metaobject mutation from `faq-operations.md`
+4. Confirm: "FAQ deleted."
 
 ## Constants
 
