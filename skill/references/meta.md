@@ -51,7 +51,7 @@ mutation { bulkGenerateAIMeta(input: { resourceGIDs: ["gid://shopify/Product/123
 
 Present generated meta tags for review:
 
-```
+```text
 **{resource title}**
 GID: {resourceGID}
 

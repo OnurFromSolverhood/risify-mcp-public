@@ -32,12 +32,12 @@ Returns `true` if ticket was created successfully.
 ### List Service Requests
 
 ```graphql
-query { serviceRequestList(page: 1, limit: 10) { nodes { id status displayStatus notes edges { service { name } } createdAt dateCompleted } totalCount } }
+query { serviceRequestList(page: 1, limit: 10, serviceId: null) { nodes { id status displayStatus notes edges { service { name } } createdAt dateCompleted } totalCount } }
 ```
 
 Present as:
 
-```
+```text
 Service Requests ({totalCount}):
 
 1. {service.name} — {displayStatus}
@@ -54,7 +54,7 @@ query { serviceRequestGet(id: "<request-id>") { id status displayStatus notes vi
 ```
 
 Present:
-```
+```text
 Service: {service.name}
 Status: {displayStatus}
 {notes ? "Notes: " + notes : ""}

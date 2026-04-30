@@ -81,8 +81,16 @@ Use `bulkCreateAndAssignFaqs` to create all accepted FAQs and assign them to the
 ```graphql
 mutation($input: BulkCreateAndAssignFaqsInput!) {
   bulkCreateAndAssignFaqs(input: $input) {
-    created { successCount failureCount }
-    assigned { successCount failureCount }
+    created {
+      results { index success metaobjectId error }
+      successCount
+      failureCount
+    }
+    assigned {
+      results { resourceGID success error }
+      successCount
+      failureCount
+    }
     createdMetaobjectGIDs
     assignmentError
   }
@@ -116,7 +124,7 @@ Tell the user how many FAQs were created and which resources they were assigned 
 
 Use the List Existing FAQs query from `faq-operations.md`. Present results as:
 
-```
+```text
 Your FAQs ({count} total):
 
 1. Q: {question}

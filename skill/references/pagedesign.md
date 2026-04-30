@@ -58,7 +58,7 @@ mutation {
 
 Parse the JSON responses and present:
 
-```
+```text
 Page Design Analysis Complete ({creditsUsed} credits used):
 
 Style Configurations:
