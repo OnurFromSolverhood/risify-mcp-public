@@ -13,6 +13,8 @@ description: >
   manage breadcrumbs, set up collection menus, configure related searches,
   generate AI navigation recommendations, activate navigation features, sync collections for AI,
   open support tickets, manage service requests,
+  fix SEO issues from audit, optimize products for SEO, bulk SEO sweep,
+  set up SEO from scratch, quick SEO wins, compare audits, check SEO health,
   or any Risify-related task.
   All operations use the execute_graphql MCP tool.
 ---
@@ -48,6 +50,18 @@ Match the user's request to the right flow:
 | "Set up breadcrumbs" | Navigation → Breadcrumbs |
 | "Generate navigation recommendations" | Navigation → Bulk AI |
 | "Open a support ticket" | Support → Create Ticket |
+| **Multi-step workflows** | **→ See `references/recipes.md`** |
+| "Fix my SEO issues" / "Fix meta issues from audit" | Recipe 1: Audit → Fix Meta Issues |
+| "Optimize this product for SEO" | Recipe 5: Full Product SEO |
+| "Optimize all my products" / "Bulk SEO" | Recipe 7: Bulk SEO Sweep |
+| "Create all content for this product" | Recipe 8: Content → Meta → FAQ Pipeline |
+| "Add FAQs to products that don't have any" | Recipe 9: FAQ Coverage Booster |
+| "Set up all navigation from scratch" | Recipe 11: Full Navigation Setup |
+| "Set up SEO for my store" / "I'm new" | Recipe 13: Zero to Healthy |
+| "Quick SEO wins" / "Fast improvements" | Recipe 14: Quick Start |
+| "How's my SEO doing?" / "Compare audits" | Recipe 15: SEO Health Check |
+| "What can I do with my credits?" | Recipe 16: Credit-Aware Planning |
+| "This isn't working" / "I need help" | Recipe 17: Support Escalation |
 
 ## Available Flows
 
@@ -61,6 +75,7 @@ Match the user's request to the right flow:
 | Account Management | Account info, billing, plans, contacts, credits, subscription | `references/account.md` + `references/account-operations.md` |
 | Navigation | Breadcrumbs, collection menus, related searches, AI suggestions | `references/navigation.md` + `references/navigation-operations.md` |
 | Support & Services | Support tickets, service requests | `references/services.md` + `references/services-operations.md` |
+| **Cross-Flow Recipes** | Multi-step workflows that chain features (audit→fix, full product SEO, onboarding) | `references/recipes.md` |
 
 ## How to Use
 
