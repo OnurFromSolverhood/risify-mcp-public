@@ -391,3 +391,52 @@ Multi-step workflows that chain features together. When a user's request spans m
 5. Confirm: "Support ticket created. The Risify team will respond to {email}."
 
 **Flows involved:** (any feature) → Support
+
+---
+
+## Category 8: Data Export
+
+### Recipe 18: Collection Products Export
+
+**Trigger:** "List all collections with their products", "Export collections and products", "Show me what's in each collection", "Collection product breakdown"
+
+**Steps:**
+
+1. List all collections with pagination:
+   ```graphql
+   { shopifyCollectionsConnection(args: { first: 250 }) { nodes { id title handle productsCount } pageInfo { hasNextPage endCursor } } }
+   ```
+   Keep paginating with `after` until `hasNextPage` is false. Collect all collection GIDs and titles.
+
+2. For each collection, fetch its products via shopifyProxy:
+   ```graphql
+   { shopifyProxy(query: "query ($id: ID!, $first: Int!, $after: String) { collection(id: $id) { id title products(first: $first, after: $after) { nodes { id title handle status } pageInfo { hasNextPage endCursor } } } }" variables: { "id": "<collection-GID>", "first": 50 }) { data errors } }
+   ```
+   Paginate within each collection if it has more than 50 products.
+
+3. Present results grouped by collection:
+   ```text
+   {Collection Title} ({productsCount} products):
+     1. {product title} — {handle}
+     2. {product title} — {handle}
+     ...
+
+   {Next Collection Title} ({productsCount} products):
+     1. {product title} — {handle}
+     ...
+   ```
+
+4. If the user wants a summary instead of full listing, present:
+   ```text
+   Collections Overview ({total} collections):
+
+   1. {title} — {productsCount} products
+   2. {title} — {productsCount} products
+   ...
+
+   Total: {sum} products across {total} collections
+   ```
+
+**Note:** For stores with many collections, this requires one API call per collection. Process in batches and show progress: "Fetched products for {N} of {total} collections..."
+
+**Flows involved:** Shopify data export (collections + products)

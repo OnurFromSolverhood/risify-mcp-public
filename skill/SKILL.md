@@ -50,6 +50,7 @@ Match the user's request to the right flow:
 | "Set up breadcrumbs" | Navigation → Breadcrumbs |
 | "Generate navigation recommendations" | Navigation → Bulk AI |
 | "Open a support ticket" | Support → Create Ticket |
+| "List all collections with products" / "Export collections" | → Collection Products Export flow |
 | **Multi-step workflows** | **→ See `references/recipes.md`** |
 | "Fix my SEO issues" / "Fix meta issues from audit" | Recipe 1: Audit → Fix Meta Issues |
 | "Optimize this product for SEO" | Recipe 5: Full Product SEO |
@@ -118,6 +119,11 @@ query { me { id fullName email shopName shopUrl domain isAppSubscriptionPlanActi
 **List Collections:**
 ```graphql
 { shopifyCollectionsConnection(args: { first: 20 }) { nodes { id title handle productsCount } pageInfo { hasNextPage endCursor } } }
+```
+
+**Get Products in a Collection (via shopifyProxy):**
+```graphql
+{ shopifyProxy(query: "query ($id: ID!, $first: Int!, $after: String) { collection(id: $id) { id title products(first: $first, after: $after) { nodes { id title handle status } pageInfo { hasNextPage endCursor } } } }" variables: { "id": "gid://shopify/Collection/123", "first": 50 }) { data errors } }
 ```
 
 **List Existing FAQs:**
