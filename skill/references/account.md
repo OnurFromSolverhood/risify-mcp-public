@@ -1,26 +1,12 @@
 # Flow: Account Management
 
-View account details, manage subscription and billing, handle team contacts, and check AI credits. All direct Risify API calls — no shopifyProxy needed.
+View account details, manage subscription and billing, handle team contacts, and check AI credits. Account info and credits use domain tools. Contact/billing operations use `execute_graphql`.
 
 ## Capabilities
 
 ### 1. View Account Info
 
-```graphql
-query {
-  me {
-    id firstName lastName fullName email
-    shopUrl shopName shopSlug domain status
-    purchaseDate currencyCode
-    isAppSubscriptionPlanActive appEmbedStatus
-    subTrialDays subCanTrial supportPeriodEndDate
-    appSubscriptionCharge {
-      id name price status subscriptionPeriodEnd chargeType createdAt
-      edges { plan { id name price planType chargeType headline description } }
-    }
-  }
-}
-```
+Use the `get_account_info` tool (no parameters). Returns store name, email, domain, subscription status, and AI credit balance.
 
 ALWAYS use this exact template:
 
@@ -29,17 +15,13 @@ ALWAYS use this exact template:
 **URL:** {shopUrl}
 **Domain:** {domain}
 **Owner:** {fullName} ({email})
-**Member since:** {purchaseDate}
-**Plan:** {appSubscriptionCharge.name} ({appSubscriptionCharge.status})
-**Next billing:** {appSubscriptionCharge.subscriptionPeriodEnd}
-**App embed:** {appEmbedStatus ? "Enabled" : "Disabled"}
+**Plan:** {plan name} ({status})
+**Next billing:** {subscriptionPeriodEnd}
 ```
 
 ### 2. Check AI Credits
 
-```graphql
-query { aiCreditInfo { limit usage resetAt } }
-```
+Use the `check_credits` tool (no parameters).
 
 - `limit = -1` → unlimited. `limit = 0` → disabled.
 - Available = `limit - usage`

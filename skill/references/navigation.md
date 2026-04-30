@@ -2,6 +2,8 @@
 
 Manage Breadcrumbs, Collection Menus, and Related Searches for Shopify products and collections. Includes AI-powered suggestions and bulk generation.
 
+**Domain tools available:** `check_navigation_sync` (check/trigger sync), `generate_navigation` (bulk AI recommendations), `list_collections` (browse collections). Manual metafield operations (set/clear breadcrumbs, menus, searches) and feature activation still use `execute_graphql` with `shopifyProxy`.
+
 ## Architecture
 
 Navigation data is stored as **Shopify metafields** on products and collections:
@@ -119,20 +121,9 @@ Returns ordered `BreadcrumbNode` items — a suggested path from root to the col
 
 ### Bulk AI breadcrumb generation
 
-```graphql
-# Direct Risify mutation
-mutation {
-  generateBulkRecommendations(
-    collectionIds: ["gid://shopify/Collection/1", "gid://shopify/Collection/2"]
-    types: [BREADCRUMBS]
-  ) {
-    results { collectionId breadcrumbs { id title handle score productCount } }
-    errors { collectionId message }
-    totalProcessed
-    totalCreditsUsed
-  }
-}
-```
+Use the `generate_navigation` tool:
+- `collectionIds`: ["gid://shopify/Collection/1", "gid://shopify/Collection/2"]
+- `types`: ["BREADCRUMBS"] (optional — defaults to all three types)
 
 ### Remove breadcrumbs
 
@@ -185,21 +176,7 @@ Use similar collections to suggest menu items:
 query { similarCollections(collectionId: "gid://shopify/Collection/123", limit: 10, threshold: 0.75) { id title handle score } }
 ```
 
-Or bulk generate:
-```graphql
-# Direct Risify mutation
-mutation {
-  generateBulkRecommendations(
-    collectionIds: ["gid://shopify/Collection/1"]
-    types: [COLLECTION_MENU]
-  ) {
-    results { collectionId collectionMenu { id title handle score productCount } }
-    errors { collectionId message }
-    totalProcessed
-    totalCreditsUsed
-  }
-}
-```
+Or bulk generate using the `generate_navigation` tool with `types: ["COLLECTION_MENU"]`.
 
 ---
 
@@ -238,21 +215,7 @@ query { similarCollections(collectionId: "gid://shopify/Collection/123", limit: 
 
 Convert results to related search format: `{ title: collection.title, url: "/collections/" + collection.handle }`
 
-Or bulk generate:
-```graphql
-# Direct Risify mutation
-mutation {
-  generateBulkRecommendations(
-    collectionIds: ["gid://shopify/Collection/1"]
-    types: [RELATED_SEARCH]
-  ) {
-    results { collectionId relatedSearch { id title handle score productCount } }
-    errors { collectionId message }
-    totalProcessed
-    totalCreditsUsed
-  }
-}
-```
+Or bulk generate using the `generate_navigation` tool with `types: ["RELATED_SEARCH"]`.
 
 ---
 
@@ -305,28 +268,18 @@ query { semanticTree { clusters { id label coherence collections { id title hand
 
 Before AI recommendations work, collections must be synced (embedded) for semantic analysis.
 
-### Check sync status
+### Check sync status and trigger sync
+
+Use the `check_navigation_sync` tool:
+- No parameters: returns current sync status (synced count, total count, last sync time)
+- `trigger_sync: true`: triggers a sync if collections are not yet synced
+
+This uses AI credits. Before triggering sync on large stores, preview the cost via `execute_graphql`:
 
 ```graphql
-# Direct Risify query
-query { semanticSyncStatus { isSyncing status lastSyncedAt totalCount syncedCount failedCount } }
-```
-
-### Preview sync cost
-
-```graphql
-# Direct Risify query
+# Direct Risify query (cost preview — no domain tool for this)
 query { semanticSyncPreview { totalCollections alreadySyncedCount toBeSyncedCount collectionsPerCredit estimatedCredits availableCredits hasUnlimitedCredits insufficientCredit } }
 ```
-
-### Trigger sync
-
-```graphql
-# Direct Risify mutation
-mutation { triggerEmbeddingSync }
-```
-
-This uses AI credits. Check `semanticSyncPreview` first to show the user the cost.
 
 ---
 
@@ -335,8 +288,8 @@ This uses AI credits. Check `semanticSyncPreview` first to show the user the cos
 | Situation | Response |
 |-----------|----------|
 | Feature not activated | Guide user to activate it. Create the metafield definitions via shopifyProxy |
-| No semantic sync | AI suggestions won't work. Trigger `triggerEmbeddingSync` first |
-| Insufficient credits for sync | Tell user. Direct to plan upgrade or credit management |
+| No semantic sync | AI suggestions won't work. Use `check_navigation_sync` with `trigger_sync: true` |
+| Insufficient credits for sync | Tell user. Use `check_credits` to show balance. Direct to plan upgrade |
 | generateBulkRecommendations errors | Check individual `errors` array — some collections may fail while others succeed |
 | metafieldsSet fails | Check ownerId is valid, metafield definition exists |
 

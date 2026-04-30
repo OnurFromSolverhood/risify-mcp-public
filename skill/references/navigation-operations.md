@@ -1,10 +1,25 @@
 # Navigation GraphQL Operations Reference
 
-All operations use the `execute_graphql` MCP tool. Risify API calls are direct. Shopify Admin API calls are wrapped in `shopifyProxy`.
+Sync status and bulk generation use **domain tools**. Metafield operations, feature activation, and recommendation management use `execute_graphql`.
 
 ---
 
-## Risify API (Direct)
+## Domain Tools
+
+### Check/Trigger Sync
+Tool: `check_navigation_sync` — optional `trigger_sync: true`
+
+### Bulk AI Recommendations
+Tool: `generate_navigation`
+- `collectionIds`: ["gid://shopify/Collection/1", "gid://shopify/Collection/2"]
+- `types`: ["BREADCRUMBS", "COLLECTION_MENU", "RELATED_SEARCH"] (optional, defaults to all)
+
+### List Collections
+Tool: `list_collections` — optional `first`, `after`, `query`
+
+---
+
+## Risify API via execute_graphql
 
 ### Suggest Breadcrumb Path (single collection)
 ```graphql
@@ -16,49 +31,6 @@ mutation {
   }
 }
 ```
-
-### Generate Bulk Recommendations
-```graphql
-mutation {
-  generateBulkRecommendations(
-    collectionIds: ["gid://shopify/Collection/1", "gid://shopify/Collection/2"]
-    types: [BREADCRUMBS, COLLECTION_MENU, RELATED_SEARCH]
-  ) {
-    results {
-      collectionId
-      breadcrumbs {
-        id
-        title
-        handle
-        score
-        productCount
-      }
-      collectionMenu {
-        id
-        title
-        handle
-        score
-        productCount
-      }
-      relatedSearch {
-        id
-        title
-        handle
-        score
-        productCount
-      }
-    }
-    errors {
-      collectionId
-      message
-    }
-    totalProcessed
-    totalCreditsUsed
-  }
-}
-```
-
-Types enum: `BREADCRUMBS`, `COLLECTION_MENU`, `RELATED_SEARCH`
 
 ### Get Similar Collections
 ```graphql
@@ -222,20 +194,8 @@ query {
 Optional `status` filter: `PENDING`, `ACCEPTED`, `DISMISSED` (omit for all).
 
 ### Get Semantic Sync Status
-```graphql
-query {
-  semanticSyncStatus {
-    isSyncing
-    status
-    lastSyncedAt
-    totalCount
-    syncedCount
-    failedCount
-  }
-}
-```
+Use `check_navigation_sync` domain tool instead. For the detailed preview (credit cost), use `execute_graphql`:
 
-### Get Semantic Sync Preview
 ```graphql
 query {
   semanticSyncPreview {
@@ -248,13 +208,6 @@ query {
     hasUnlimitedCredits
     insufficientCredit
   }
-}
-```
-
-### Trigger Embedding Sync
-```graphql
-mutation {
-  triggerEmbeddingSync
 }
 ```
 

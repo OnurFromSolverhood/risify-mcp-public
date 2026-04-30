@@ -1,77 +1,20 @@
 # Account GraphQL Operations Reference
 
-All operations use the `execute_graphql` MCP tool directly against the Risify API.
+Account info and credits use **domain tools**. Contact, billing, and plan operations use `execute_graphql`.
 
 ---
 
-## Queries
+## Domain Tools
 
-### Get Account Info (me)
-```graphql
-query {
-  me {
-    id
-    createdAt
-    firstName
-    lastName
-    fullName
-    email
-    shopUrl
-    shopName
-    shopSlug
-    domain
-    status
-    purchaseDate
-    currencyCode
-    isAppSubscriptionPlanActive
-    appEmbedStatus
-    subTrialDays
-    subCanTrial
-    supportPeriodEndDate
-    appSubscriptionCharge {
-      id
-      createdAt
-      updatedAt
-      name
-      price
-      appliedDiscountAmount
-      status
-      chargeType
-      chargeId
-      subscriptionPeriodEnd
-      test
-      subTrialApplied
-      subTrialEndsAt
-      discountCycles
-      edges {
-        plan {
-          id
-          name
-          price
-          chargeType
-          planType
-          headline
-          description
-          tags { key value }
-          discountAmount
-          shopifySubscriptionInterval
-        }
-      }
-    }
-  }
-}
-```
+### Get Account Info
+Tool: `get_account_info` (no parameters) — returns store, email, domain, subscription, credits
 
-### Get AI Credit Info
-```graphql
-query {
-  aiCreditInfo {
-    limit
-    usage
-    resetAt
-  }
-}
-```
+### Get AI Credits
+Tool: `check_credits` (no parameters) — returns limit, usage, remaining, reset date
+
+---
+
+## Queries (via execute_graphql)
 
 ### List Contacts
 ```graphql
