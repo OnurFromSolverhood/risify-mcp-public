@@ -87,7 +87,7 @@ mutation($input: BulkCreateAndAssignFaqsInput!) {
       failureCount
     }
     assigned {
-      results { resourceGID success error }
+      results { resourceGID success finalFaqMetaobjectGIDs error }
       successCount
       failureCount
     }
@@ -113,6 +113,8 @@ Variables — put the accepted questions/answers in `items` and the resource GID
 This single call creates FAQ metaobjects, assigns them to all specified resources, and merges with any existing FAQ assignments. Max 250 items per call.
 
 Check `created.successCount` and `assigned.successCount` in the response to confirm results.
+
+**Note:** `assigned` may be null if all FAQ creations failed. Always check `created.failureCount` first — if all items failed, skip assignment reporting.
 
 ### Step 6: Confirm
 

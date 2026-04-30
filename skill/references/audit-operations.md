@@ -97,7 +97,7 @@ query {
   auditBrokenLinksConnection(args: {
     first: 20
     query: "auditId:<audit-id>"
-    sortKey: IMPACT
+    sortKey: LOCATION
   }) {
     nodes {
       id

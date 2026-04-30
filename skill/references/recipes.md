@@ -237,7 +237,7 @@ Multi-step workflows that chain features together. When a user's request spans m
 4. Once synced: list collections
 5. Generate bulk recommendations for all collections:
    ```graphql
-   mutation { generateBulkRecommendations(collectionIds: [...], types: [BREADCRUMBS, COLLECTION_MENU, RELATED_SEARCH]) { results { collectionId collectionTitle recommendations { type suggestedItems { title score } } } totalProcessed totalCreditsUsed } }
+   mutation { generateBulkRecommendations(collectionIds: [...], types: [BREADCRUMBS, COLLECTION_MENU, RELATED_SEARCH]) { results { collectionId breadcrumbs { id title handle score } collectionMenu { id title handle score } relatedSearch { id title handle score } } errors { collectionId message } totalProcessed totalCreditsUsed } }
    ```
 6. Present recommendations grouped by collection → user accepts/dismisses
 7. Apply accepted recommendations via shopifyProxy metafieldsSet (see `navigation-operations.md`)
