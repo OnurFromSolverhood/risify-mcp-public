@@ -7,7 +7,7 @@ Generate AI-powered FAQs and save them to Shopify as metaobjects linked to produ
 FAQs are **Shopify Metaobjects** (type `$app:risify_faq`) with fields `question`, `answer`, `tags`. They are linked to resources via **metafields** (namespace `$app:risify`, key `faq`, type `list.metaobject_reference`).
 
 - Generation uses the **Risify API** directly (`generateAIFAQ`)
-- Saving/assigning uses the **Shopify Admin API** via `shopifyProxy`
+- Saving/assigning uses the **Risify API** directly (`bulkCreateAndAssignFaqs`) — one call creates metaobjects AND assigns them to resources
 
 ## Step-by-Step Flow
 
@@ -68,28 +68,39 @@ A: {answer}
 → Accept / Edit / Discard?
 ```
 
-### Step 5: Save as Shopify Metaobjects
+### Step 5: Save and Assign FAQs
 
-For each accepted FAQ, create a metaobject via shopifyProxy. See `faq-operations.md` for the exact query.
+Use `bulkCreateAndAssignFaqs` to create all accepted FAQs and assign them to the selected resources in **one call**:
 
-Create one metaobject per FAQ with:
-- type: `$app:risify_faq`
-- fields: `question`, `answer`, `tags` (tags defaults to `"[]"`)
+```graphql
+mutation($input: BulkCreateAndAssignFaqsInput!) {
+  bulkCreateAndAssignFaqs(input: $input) {
+    created { successCount failureCount }
+    assigned { successCount failureCount }
+    createdMetaobjectGIDs
+    assignmentError
+  }
+}
+```
 
-Collect all created metaobject IDs from the response.
+Variables — put the accepted questions/answers in `items` and the resource GIDs from Step 2 in `resourceGIDs`:
+```json
+{
+  "input": {
+    "items": [
+      { "question": "What is your return policy?", "answer": "We offer 30-day returns on all products." },
+      { "question": "Do you ship internationally?", "answer": "Yes, we ship to 50+ countries." }
+    ],
+    "resourceGIDs": ["gid://shopify/Product/123", "gid://shopify/Collection/456"]
+  }
+}
+```
 
-### Step 6: Assign to Resources
+This single call creates FAQ metaobjects, assigns them to all specified resources, and merges with any existing FAQ assignments. Max 250 items per call.
 
-Link the new FAQ metaobjects to the selected products/collections by setting metafields.
+Check `created.successCount` and `assigned.successCount` in the response to confirm results.
 
-For each resource:
-1. Read its existing FAQ metafield to get current FAQ IDs
-2. Merge new FAQ IDs with existing ones (deduplicate)
-3. Write the updated list back via `metafieldsSet`
-
-See `faq-operations.md` for exact queries. Batch limit: max 25 metafields per `metafieldsSet` call.
-
-### Step 7: Confirm
+### Step 6: Confirm
 
 Tell the user how many FAQs were created and which resources they were assigned to.
 
@@ -120,6 +131,6 @@ Tell the user how many FAQs were created and which resources they were assigned 
 |-----------|----------|
 | No AI credits | Tell user. Direct to Risify > Support > AI Credits |
 | Invalid resource GIDs | Verify selections exist. Re-fetch if needed |
-| metaobjectCreate fails | FAQ feature may not be activated. User must enable it in Risify first |
-| metafieldsSet fails | Check ownerId validity and that metafield definition exists |
-| shopifyProxy errors | Check `errors` field. Common: access denied, rate limited |
+| bulkCreateAndAssignFaqs fails | FAQ feature may not be activated. User must enable it in Risify first |
+| Partial failures | Check `created.failureCount` and `assigned.failureCount` — some items may succeed while others fail |
+| shopifyProxy errors (update/delete) | Check `errors` field. Common: access denied, rate limited |
