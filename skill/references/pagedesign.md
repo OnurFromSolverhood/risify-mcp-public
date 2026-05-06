@@ -22,13 +22,15 @@ Example: "Which pages should I analyze? I need the URL and type (collection, pro
 
 Ask if user wants all sections analyzed or specific ones:
 
-| Section | Value |
+| UI label | GraphQL enum value |
 |---|---|
-| Breadcrumb | `BREADCRUMB` |
+| Breadcrumbs | `BREADCRUMB` |
 | FAQ | `FAQ` |
-| Collection Menu | `COLLECTION_MENU` |
-| Related Searches | `RELATED_SEARCHES` |
+| Similar collections | `COLLECTION_MENU` |
+| Discover (suggestions) | `RELATED_SEARCHES` |
 | FAQ Tags | `FAQ_TAGS` |
+
+Map user phrasings: "discover" / "discover sections" → `RELATED_SEARCHES`; "similar" / "similar collections" → `COLLECTION_MENU`. Old labels "Related Searches" and "Collection Menu" must NOT appear in user-facing text.
 
 Default: all sections.
 

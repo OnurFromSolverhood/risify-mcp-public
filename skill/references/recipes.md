@@ -227,7 +227,7 @@ Multi-step workflows that chain features together. When a user's request spans m
 
 ### Recipe 11: Full Navigation Setup
 
-**Trigger:** "Set up all navigation for my store", "I want breadcrumbs, menus, and related searches", "Configure navigation from scratch"
+**Trigger:** "Set up all navigation for my store", "I want breadcrumbs, similar collections, and discover suggestions", "Configure navigation from scratch"
 
 **Steps:**
 
@@ -235,14 +235,16 @@ Multi-step workflows that chain features together. When a user's request spans m
 2. Check semantic sync status (see `navigation.md` Semantic Sync section)
 3. If not synced: preview cost → trigger sync → inform user to wait
 4. Once synced: list collections
-5. Generate bulk recommendations for all collections:
+5. Generate bulk recommendations for all collections (covers Breadcrumbs, Similar collections, Discover — collection-side only):
    ```graphql
    mutation { generateBulkRecommendations(collectionIds: [...], types: [BREADCRUMBS, COLLECTION_MENU, RELATED_SEARCH]) { results { collectionId breadcrumbs { id title handle score } collectionMenu { id title handle score } relatedSearch { id title handle score } } errors { collectionId message } totalProcessed totalCreditsUsed } }
    ```
+   > Enum→UI mapping (never expose enum names to user): `BREADCRUMBS`→Breadcrumbs, `COLLECTION_MENU`→Similar collections, `RELATED_SEARCH`→Discover.
 6. Present recommendations grouped by collection → user accepts/dismisses
 7. Apply accepted recommendations via shopifyProxy metafieldsSet (see `navigation-operations.md`)
-8. Offer: "Want me to analyze the page design and generate styles for these navigation elements?"
-9. If yes → follow Recipe 12
+8. **Note:** This recipe doesn't cover **Similar products** — that's a product-side feature with metafield key `related_products` and no `generateBulkRecommendations` enum. If the user wants product-side coverage, handle products separately via `BulkRelatedProductsEditModal` flow (manual selection or product-side AI suggestion if available).
+9. Offer: "Want me to analyze the page design and generate styles for these navigation elements?"
+10. If yes → follow Recipe 12
 
 **Flows involved:** Navigation (sync → generate → apply) → (optional) Page Design
 
@@ -250,7 +252,7 @@ Multi-step workflows that chain features together. When a user's request spans m
 
 ### Recipe 12: Navigation → Page Design
 
-**Trigger:** "Style my breadcrumbs", "Make the navigation look better", "Generate CSS for my collection menus"
+**Trigger:** "Style my breadcrumbs", "Make the navigation look better", "Generate CSS for my similar collections"
 
 **Steps:**
 

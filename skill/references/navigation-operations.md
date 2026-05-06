@@ -347,7 +347,7 @@ mutation {
 }
 ```
 
-### Set Collection Menu
+### Set Similar collections (legacy operation name: Collection Menu)
 ```graphql
 {
   shopifyProxy(
@@ -377,7 +377,7 @@ mutation {
 }
 ```
 
-### Set Related Searches
+### Set Discover suggestions (legacy operation name: Related Searches)
 ```graphql
 {
   shopifyProxy(
@@ -399,6 +399,119 @@ mutation {
   }
 }
 ```
+
+### Set Similar products
+
+Different metafield key (`related_products`) and type (`list.product_reference`). Value is a JSON array of product GIDs.
+
+```graphql
+{
+  shopifyProxy(
+    query: "mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) { metafieldsSet(metafields: $metafields) { metafields { id value } userErrors { field message } } }"
+    variables: {
+      "metafields": [
+        {
+          "ownerId": "gid://shopify/Product/123",
+          "namespace": "$app:risify",
+          "key": "related_products",
+          "value": "[\"gid://shopify/Product/abc\",\"gid://shopify/Product/def\"]",
+          "type": "list.product_reference"
+        },
+        {
+          "ownerId": "gid://shopify/Product/123",
+          "namespace": "$app:risify",
+          "key": "related_products_custom_title",
+          "value": "You may also like",
+          "type": "single_line_text_field"
+        }
+      ]
+    }
+  ) {
+    data
+    errors
+  }
+}
+```
+
+**View current Similar products:**
+
+```graphql
+{
+  shopifyProxy(
+    query: "query ($id: ID!) { product(id: $id) { id title handle relatedProducts: metafield(key: \"$app:risify.related_products\") { jsonValue } relatedProductsCustomTitle: metafield(key: \"$app:risify.related_products_custom_title\") { value } } }"
+    variables: { "id": "gid://shopify/Product/123" }
+  ) {
+    data
+    errors
+  }
+}
+```
+
+**Note:** `generateBulkRecommendations` does NOT accept products (the `RecommendationType` enum only has `BREADCRUMBS`, `COLLECTION_MENU`, `RELATED_SEARCH` — all collection-side). Don't promise the user AI bulk-generation for Similar products until the schema supports it.
+
+### Audit Discover suggestions (legacy operation name: Audit Related Searches)
+
+Read `type`, `value`, AND `jsonValue` together so the AI can detect definition drift and parse fallbacks:
+
+```graphql
+{
+  shopifyProxy(
+    query: "query ($id: ID!) { collection(id: $id) { id title handle metafield(key: \"$app:risify.related_searches\") { type value jsonValue } } }"
+    variables: { "id": "gid://shopify/Collection/123" }
+  ) {
+    data
+    errors
+  }
+}
+```
+
+**Interpret results:**
+- `type !== "json"` → definition drift. Stop. Report to user.
+- `jsonValue === null && value !== null` → same issue. Stop.
+- `jsonValue` is an object (not array) → wrap in array, classify the single entry.
+- `jsonValue` is an array → classify each entry (see classification table in `navigation.md`).
+
+### Repair Discover suggestions (legacy operation name: Repair Related Searches)
+
+Full audit → resolve → rewrite cycle. Run when the user asks to view/edit/regenerate related searches and audit finds FIXABLE or DROP entries.
+
+**Step 1 — Audit** (query above).
+
+**Step 2 — Normalize FIXABLE entries:**
+- Strip leading `/<lang>/` from url (`^/[a-z]{2}/` → `/`)
+- Strip absolute origin (`^https?://[^/]+` → ``)
+- Map alternate key names: `name`→`title`, `link|href|slug`→`url`
+- Wrap plain-string entries: `"bestsellers"` → `{title: "Bestsellers", url: "/collections/bestsellers"}`
+
+**Step 3 — Resolve every handle:**
+
+```graphql
+{
+  shopifyProxy(
+    query: "query ($h: String!) { collectionByHandle(handle: $h) { id title } productByHandle(handle: $h) { id title } }"
+    variables: { "h": "summer-dresses" }
+  ) {
+    data
+    errors
+  }
+}
+```
+
+Drop entries where both resolve to null.
+
+**Step 4 — Confirm with user:**
+> "{V} valid, {F} repaired, {D} dropped ({reasons}). Apply?"
+
+**Step 5 — Write canonical payload:**
+
+```json
+[
+  { "title": "Summer Dresses", "url": "/collections/summer-dresses" },
+  { "title": "Floral Prints",  "url": "/collections/floral" }
+]
+```
+
+via the "Set Discover suggestions" mutation above. Use `type: "json"` and namespace `$app:risify`. Never include extra keys — strip `description`, `image`, `customImageGid`, etc., from any legacy entries.
 
 ### Remove Navigation Data (Clear)
 ```graphql

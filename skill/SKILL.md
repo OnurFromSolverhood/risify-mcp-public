@@ -10,7 +10,7 @@ description: >
   view account info, check AI credits, manage subscription/billing/plans,
   add/edit/remove team contacts, view billing history, cancel subscription, upgrade plan,
   assign FAQs to products or collections,
-  manage breadcrumbs, set up collection menus, configure related searches,
+  manage breadcrumbs, set up similar collections, set up similar products, configure discover suggestions (legacy: related searches),
   generate AI navigation recommendations, activate navigation features, sync collections for AI,
   open support tickets, manage service requests,
   fix SEO issues from audit, optimize products for SEO, bulk SEO sweep,
@@ -26,6 +26,11 @@ Complete workflow guide for the Risify Shopify SEO platform. All operations go t
 **Two API patterns:**
 - **Risify API** — direct queries/mutations (e.g., `generateAIFAQ`, `aiCreditInfo`, `me`). Use this for most operations.
 - **Shopify Admin API** — wrapped in `shopifyProxy(query: "...", variables: {...})` which proxies to Shopify through the Risify backend. No separate Shopify token needed. Use this only for direct Shopify operations (metaobject CRUD, metafield reads/writes, theme listing).
+
+**UI labels vs API names** — the product UI uses friendly labels that differ from metafield keys and GraphQL enums. Always speak the UI label to the user; use the metafield key / enum only inside queries. Old labels that MUST NOT appear in user-facing strings:
+- "Related Searches" → say **"Discover"** / **"Discover suggestions"** (metafield key stays `related_searches`, enum stays `RELATED_SEARCH`)
+- "Collection Menu" → say **"Similar collections"** (metafield key stays `collection_menu`, enum stays `COLLECTION_MENU`)
+- Product-side "Similar" is a separate feature with metafield key `related_products` (no GraphQL enum — manual writes only)
 
 ## Request Routing
 
@@ -49,6 +54,9 @@ Match the user's request to the right flow:
 | "Cancel my subscription" | Account → Cancel |
 | "Set up breadcrumbs" | Navigation → Breadcrumbs |
 | "Generate navigation recommendations" | Navigation → Bulk AI |
+| "Set up Discover" / "Add discover suggestions" / "Edit related searches" (legacy) | Navigation → Discover |
+| "Add similar collections" / "Set up similar" (on a collection) | Navigation → Similar collections |
+| "Show related products" / "Set up similar products" (on a product) | Navigation → Similar products |
 | "Open a support ticket" | Support → Create Ticket |
 | "List all collections with products" / "Export collections" | → Collection Products Export flow |
 | **Multi-step workflows** | **→ See `references/recipes.md`** |
@@ -74,7 +82,7 @@ Match the user's request to the right flow:
 | Content Generation | Generate blog posts, product descriptions, collection descriptions, about-us | `references/content.md` + `references/content-operations.md` |
 | Page Design Analysis | Analyze store pages, generate style configs and custom CSS | `references/pagedesign.md` + `references/pagedesign-operations.md` |
 | Account Management | Account info, billing, plans, contacts, credits, subscription | `references/account.md` + `references/account-operations.md` |
-| Navigation | Breadcrumbs, collection menus, related searches, AI suggestions | `references/navigation.md` + `references/navigation-operations.md` |
+| Navigation | Breadcrumbs, Similar (collections + products), Discover suggestions, AI suggestions | `references/navigation.md` + `references/navigation-operations.md` |
 | Support & Services | Support tickets, service requests | `references/services.md` + `references/services-operations.md` |
 | **Cross-Flow Recipes** | Multi-step workflows that chain features (audit→fix, full product SEO, onboarding) | `references/recipes.md` |
 
