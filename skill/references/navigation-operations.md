@@ -473,7 +473,7 @@ Read `type`, `value`, AND `jsonValue` together so the AI can detect definition d
 
 ### Repair Discover suggestions (legacy operation name: Repair Related Searches)
 
-Full audit → resolve → rewrite cycle. Run when the user asks to view/edit/regenerate related searches and audit finds FIXABLE or DROP entries.
+Full audit → resolve → rewrite cycle. Run when the user asks to view/edit/regenerate Discover suggestions and audit finds FIXABLE or DROP entries.
 
 **Step 1 — Audit** (query above).
 

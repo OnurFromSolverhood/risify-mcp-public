@@ -123,7 +123,7 @@ Multi-step workflows that chain features together. When a user's request spans m
 2. Find the collection: `{ shopifyCollectionsConnection(args: { first: 5, query: "title:*{name}*" }) { nodes { id title handle description productsCount } } }`
 3. **Meta Tags:** Generate and apply (see `meta.md`)
 4. **FAQs:** Generate and assign (see `faq.md`)
-5. **Navigation:** Generate recommendations for breadcrumbs + collection menu + related searches via `generateBulkRecommendations` (see `navigation.md`) → review → accept
+5. **Navigation:** Generate recommendations for Breadcrumbs + Similar collections + Discover via `generateBulkRecommendations` (see `navigation.md`) → review → accept
 6. Present summary similar to Recipe 5
 
 **Flows involved:** Meta Tags → FAQ → Navigation

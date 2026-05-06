@@ -1,6 +1,6 @@
 # Flow: Page Design Analysis
 
-Analyze store pages and generate style configurations and custom CSS for Risify theme sections (breadcrumbs, FAQs, collection menus, related searches).
+Analyze store pages and generate style configurations and custom CSS for Risify theme sections (Breadcrumbs, FAQs, Similar collections, Discover suggestions).
 
 ## Step-by-Step Flow
 
