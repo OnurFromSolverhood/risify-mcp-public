@@ -268,6 +268,8 @@ A valid related-search entry MUST have exactly these two fields:
 
 The metafield value is a JSON array of these objects. Anything else is legacy or corrupt — never trust `jsonValue` blindly. Always run the audit flow below before writing.
 
+> _**Last verified:** 2026-05-06 against `risifyv2_remix@ad330c8` (`app/features/risify/constants/featureActivationConfig.ts:222-263`, `pages/navigation/components/modals/BulkRelatedSearchEditModal.tsx`) and `risify-mcp-main@75876e9` (`schema.graphql` `RecommendationType:944-947`). Re-check this section when the in-app "Recover" flow ships, when the metafield definition changes, or when `featureActivationConfig.ts` is updated — the canonical shape and legacy-shape table here are derived from those sources._
+
 ### Recognized legacy / invalid shapes
 
 Older stores may have any of these in `$app:risify.related_searches`:
