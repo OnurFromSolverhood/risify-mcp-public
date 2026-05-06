@@ -28,9 +28,11 @@ Complete workflow guide for the Risify Shopify SEO platform. All operations go t
 - **Shopify Admin API** — wrapped in `shopifyProxy(query: "...", variables: {...})` which proxies to Shopify through the Risify backend. No separate Shopify token needed. Use this only for direct Shopify operations (metaobject CRUD, metafield reads/writes, theme listing).
 
 **UI labels vs API names** — the product UI uses friendly labels that differ from metafield keys and GraphQL enums. Always speak the UI label to the user; use the metafield key / enum only inside queries. Old labels that MUST NOT appear in user-facing strings:
-- "Related Searches" → say **"Discover"** / **"Discover suggestions"** (metafield key stays `related_searches`, enum stays `RELATED_SEARCH`)
+- "Related Searches" → say **"Discover"** / **"Discover suggestions"** (metafield key stays `related_searches`, works on both Collection and Product owner types; bulk-AI enum is `RELATED_SEARCH` — collection-only)
 - "Collection Menu" → say **"Similar collections"** (metafield key stays `collection_menu`, enum stays `COLLECTION_MENU`)
-- Product-side "Similar" is a separate feature with metafield key `related_products` (no GraphQL enum — manual writes only)
+- Product-side "Similar" is a separate feature with metafield key `related_products` (no GraphQL enum — no AI bulk-gen, manual writes only)
+
+**Enum naming caveat:** `RecommendationType.RELATED_SEARCH` (singular) and `PageDesignSection.RELATED_SEARCHES` (plural) are different enums in different namespaces. Use whichever matches the operation you're calling.
 
 ## Request Routing
 

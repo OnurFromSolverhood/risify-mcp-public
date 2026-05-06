@@ -402,7 +402,7 @@ mutation {
 
 ### Set Similar products
 
-Different metafield key (`related_products`) and type (`list.product_reference`). Value is a JSON array of product GIDs.
+Three metafields: the list (`related_products`, `list.product_reference`), optional custom image (`related_products_custom_image`, `file_reference`), and optional custom title (`related_products_custom_title`, `single_line_text_field`). All on Product ownerType.
 
 ```graphql
 {
@@ -416,6 +416,13 @@ Different metafield key (`related_products`) and type (`list.product_reference`)
           "key": "related_products",
           "value": "[\"gid://shopify/Product/abc\",\"gid://shopify/Product/def\"]",
           "type": "list.product_reference"
+        },
+        {
+          "ownerId": "gid://shopify/Product/123",
+          "namespace": "$app:risify",
+          "key": "related_products_custom_image",
+          "value": "gid://shopify/MediaImage/123",
+          "type": "file_reference"
         },
         {
           "ownerId": "gid://shopify/Product/123",
@@ -438,7 +445,7 @@ Different metafield key (`related_products`) and type (`list.product_reference`)
 ```graphql
 {
   shopifyProxy(
-    query: "query ($id: ID!) { product(id: $id) { id title handle relatedProducts: metafield(key: \"$app:risify.related_products\") { jsonValue } relatedProductsCustomTitle: metafield(key: \"$app:risify.related_products_custom_title\") { value } } }"
+    query: "query ($id: ID!) { product(id: $id) { id title handle relatedProducts: metafield(key: \"$app:risify.related_products\") { jsonValue } relatedProductsCustomImage: metafield(key: \"$app:risify.related_products_custom_image\") { value } relatedProductsCustomTitle: metafield(key: \"$app:risify.related_products_custom_title\") { value } } }"
     variables: { "id": "gid://shopify/Product/123" }
   ) {
     data
@@ -447,7 +454,7 @@ Different metafield key (`related_products`) and type (`list.product_reference`)
 }
 ```
 
-**Note:** `generateBulkRecommendations` does NOT accept products (the `RecommendationType` enum only has `BREADCRUMBS`, `COLLECTION_MENU`, `RELATED_SEARCH` — all collection-side). Don't promise the user AI bulk-generation for Similar products until the schema supports it.
+**Note on AI suggestions:** None available for Similar products. The schema has no `similarProducts` query, and `generateBulkRecommendations` is hard-coded to `collectionIds: [ID!]!` with enum values `BREADCRUMBS / COLLECTION_MENU / RELATED_SEARCH` — all collection-side. Selection must be manual.
 
 ### Audit Discover suggestions (legacy operation name: Audit Related Searches)
 

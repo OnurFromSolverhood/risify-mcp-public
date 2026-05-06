@@ -17,8 +17,9 @@ Navigation data is stored as **Shopify metafields** on products and collections:
 | Similar collections custom title | `$app:risify.collection_menu_custom_title` | `single_line_text_field` | Collections only |
 | Similar collections description | `$app:risify.collection_menu_description` | `rich_text_field` | Collections only |
 | Similar products | `$app:risify.related_products` | `list.product_reference` | Products only |
+| Similar products custom image | `$app:risify.related_products_custom_image` | `file_reference` | Products only |
 | Similar products custom title | `$app:risify.related_products_custom_title` | `single_line_text_field` | Products only |
-| Discover suggestions | `$app:risify.related_searches` | `json` | Collections (and Products — verify before applying on products) |
+| Discover suggestions | `$app:risify.related_searches` | `json` | Collections & Products (same key on both owner types) |
 | Discover custom title | `$app:risify.discover_custom_title` | `single_line_text_field` | Collections |
 
 **API patterns:**
@@ -244,13 +245,15 @@ mutation { metafieldsSet(metafields: [{
 
 Optional custom title (`related_products_custom_title`, `single_line_text_field`) — add to same `metafieldsSet` call.
 
-**AI suggestions for Similar products:** `generateBulkRecommendations` does NOT have a product-side enum (only `BREADCRUMBS`, `COLLECTION_MENU`, `RELATED_SEARCH` for collections). For product AI suggestions use `similarCollections`-style queries adapted to products if available, or fall back to manual selection. Don't promise the user AI bulk-generation for Similar products until the schema supports it.
+**AI suggestions for Similar products:** None available. The schema has no `similarProducts` query (only `similarCollections` exists at present), and `generateBulkRecommendations` is hard-coded to `collectionIds: [ID!]!` with enum values `BREADCRUMBS`, `COLLECTION_MENU`, `RELATED_SEARCH` — all collection-side. Selection MUST be manual: `metafieldsSet` with hand-picked product GIDs. Do not promise the user AI bulk-generation for Similar products. If/when a product-side equivalent ships, document it here.
 
 ---
 
 ## Flow: Discover
 
-Discover suggestions (legacy name "Related Searches") show relevant search terms on collection pages — e.g. "You might also like: summer dresses, floral prints". Stored on collections in the `$app:risify.related_searches` metafield (`type: json`). Old name "Related Searches" — never use it with the user.
+Discover suggestions (legacy name "Related Searches") show relevant search terms on collection and product pages — e.g. "You might also like: summer dresses, floral prints". Stored in the `$app:risify.related_searches` metafield (`type: json`) — **same key on both Collection and Product owner types** (confirmed by `featureActivationConfig.ts`). Old name "Related Searches" — never use it with the user.
+
+> Enum naming caveat: `RecommendationType.RELATED_SEARCH` (singular) is the bulk-recommendation enum value — collections only. `PageDesignSection.RELATED_SEARCHES` (plural) is the page-design enum value. Different enums in different namespaces; use whichever matches the operation you're calling.
 
 ### Canonical entry shape
 
@@ -468,6 +471,7 @@ This uses AI credits. Check `semanticSyncPreview` first to show the user the cos
 | Similar collections custom title | `collection_menu_custom_title` |
 | Similar collections description | `collection_menu_description` |
 | Similar products | `related_products` |
+| Similar products custom image | `related_products_custom_image` |
 | Similar products custom title | `related_products_custom_title` |
 | Discover suggestions | `related_searches` |
 | Discover custom title | `discover_custom_title` |
