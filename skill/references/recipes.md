@@ -248,6 +248,86 @@ Multi-step workflows that chain features together. When a user's request spans m
 
 ---
 
+### Recipe 11b: Bulk import navigation data from a spreadsheet
+
+**Trigger:** "Import this Excel/CSV into navigation", "Here's a spreadsheet of breadcrumbs / similar / discover entries — set them up", "Apply these related searches to all these collections", "Bulk-load discover suggestions from this file"
+
+This is the marketing-team workflow: a spreadsheet maps owner collections to their Breadcrumbs, Similar, and/or Discover entries. The danger zone is **Discover** — its value shape is `{title, url}` with handle-based URLs, NOT GIDs (see the contrast table at the top of `navigation.md`). Most bulk-import bugs come from substituting a GID where a `/collections/<handle>` URL belongs.
+
+**Steps:**
+
+1. **Parse the spreadsheet.** Identify, for each row:
+   - The owner resource (collection or product) — by GID, handle, or title.
+   - Which feature(s) the row's entries are for (Breadcrumbs / Similar / Discover).
+   - The target resources for each entry — by GID, handle, or title.
+
+2. **Resolve every owner and every target to BOTH `gid` AND `handle`.** This is the step that prevents the GID-in-Discover bug. Run a paginated query once and build a lookup map:
+
+   ```graphql
+   # Via shopifyProxy
+   query { collections(first: 250) { nodes { id handle title } pageInfo { hasNextPage endCursor } } }
+   ```
+
+   Continue paginating with `after: <endCursor>`. Repeat with `products` if products are involved. Build a map keyed by whichever identifier the spreadsheet provided (handle or title) so every row ends up with both `gid` and `handle` available. If the spreadsheet only has GIDs, build the inverse map (gid → handle).
+
+   If any target resource cannot be resolved (handle missing, GID stale): collect those rows into a "could not resolve" list and surface them at the end. Do not write `null`/empty values into the metafield.
+
+3. **Build per-feature payloads — one payload shape per feature, side by side.** Do not generalize across features. The three shapes are:
+
+   ```js
+   // Breadcrumbs — GID array
+   {
+     ownerId: ownerGid,
+     namespace: "$app:risify",
+     key: "breadcrumb",
+     type: "list.collection_reference",
+     value: JSON.stringify([targetGid1, targetGid2, ...])
+   }
+
+   // Similar (Collection Menu) — GID array
+   {
+     ownerId: ownerGid,
+     namespace: "$app:risify",
+     key: "collection_menu",
+     type: "list.collection_reference",
+     value: JSON.stringify([targetGid1, targetGid2, ...])
+   }
+
+   // Discover (Related Searches) — {title, url} objects
+   //   url MUST be /collections/<handle> or /products/<handle>
+   //   url MUST NOT be a GID, an absolute URL, or locale-prefixed
+   {
+     ownerId: ownerGid,
+     namespace: "$app:risify",
+     key: "related_searches",
+     type: "json",
+     value: JSON.stringify(entries.map(e => ({
+       title: e.title,
+       url: (e.targetType === "product" ? "/products/" : "/collections/") + e.targetHandle
+     })))
+   }
+   ```
+
+4. **Batch the `metafieldsSet` calls.** Shopify caps at 25 metafields per call — chunk the input array accordingly. Report per-batch success/failure with collection IDs and any `userErrors`. Continue past partial failures so one bad row doesn't abort the rest.
+
+5. **Verify after writing.** Re-read each touched metafield via `shopifyProxy` and confirm the persisted value matches the contract for that feature. For Discover specifically:
+
+   ```regex
+   ^/(collections|products)/[a-z0-9-]+$
+   ```
+
+   Every entry's `url` must match. If any don't, surface them — that's a sign step 2's lookup missed something or step 3 used the wrong identifier.
+
+**Common mistakes to avoid:**
+
+- **Do NOT** put GIDs into Discover entries. Discover is the only one of the three features that does not take GIDs. If you find yourself writing `{"title": "...", "url": "gid://shopify/..."}`, stop — go back to your lookup map from step 2 and use the `handle` instead.
+- **Do NOT** reuse the GID-array shape from Breadcrumbs/Similar for Discover. The metafield `type` is different (`json` vs `list.collection_reference`), and Shopify will silently accept whatever string you put in `value` as long as the type matches — bad data goes through.
+- **Do NOT** use absolute URLs (`https://shop.myshopify.com/collections/x`) or locale-prefixed URLs (`/en-us/collections/x`) in Discover. The storefront block prepends the store domain itself, and locale prefixes break theme-level routing.
+
+**Flows involved:** Navigation (lookup → write → verify), no AI suggestions involved
+
+---
+
 ### Recipe 12: Navigation → Page Design
 
 **Trigger:** "Style my breadcrumbs", "Make the navigation look better", "Generate CSS for my collection menus"
